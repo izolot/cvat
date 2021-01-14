@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 ARG http_proxy
 ARG https_proxy
@@ -23,8 +23,7 @@ ENV DJANGO_CONFIGURATION=${DJANGO_CONFIGURATION}
 RUN apt-get update && \
     apt-get install -yq \
         software-properties-common && \
-    add-apt-repository ppa:mc3man/xerus-media -y && \
-    add-apt-repository ppa:mc3man/gstffmpeg-keep -y && \
+    add-apt-repository ppa:mc3man/bionic-media -y && \
     apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yq \
         apache2 \
@@ -32,7 +31,6 @@ RUN apt-get update && \
         libapache2-mod-xsendfile \
         supervisor \
         ffmpeg \
-        gstreamer0.10-ffmpeg \
         libldap2-dev \
         libsasl2-dev \
         python3-dev \
@@ -43,25 +41,22 @@ RUN apt-get update && \
         ssh \
         poppler-utils \
         curl && \
-    curl https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && \
-    apt-get install -y git-lfs && git lfs install && \
-    if [ -z ${socks_proxy} ]; then \
-        echo export "GIT_SSH_COMMAND=\"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30\"" >> ${HOME}/.bashrc; \
-    else \
-        echo export "GIT_SSH_COMMAND=\"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ProxyCommand='nc -X 5 -x ${socks_proxy} %h %p'\"" >> ${HOME}/.bashrc; \
-    fi && \
     python3 -m pip install --no-cache-dir -U pip==20.0.1 setuptools && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
-    add-apt-repository --remove ppa:mc3man/gstffmpeg-keep -y && \
-    add-apt-repository --remove ppa:mc3man/xerus-media -y && \
+    add-apt-repository --remove ppa:mc3man/bionic-media -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Add a non-root user
 ENV USER=${USER}
 ENV HOME /home/${USER}
 WORKDIR ${HOME}
-RUN adduser --shell /bin/bash --disabled-password --gecos "" ${USER}
+RUN adduser --shell /bin/bash --disabled-password --gecos "" ${USER} && \
+if [ -z ${socks_proxy} ]; then \
+        echo export "GIT_SSH_COMMAND=\"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30\"" >> ${HOME}/.bashrc; \
+    else \
+        echo export "GIT_SSH_COMMAND=\"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ProxyCommand='nc -X 5 -x ${socks_proxy} %h %p'\"" >> ${HOME}/.bashrc; \
+    fi
 
 COPY components /tmp/components
 
