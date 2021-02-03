@@ -144,14 +144,14 @@ def process_cvat_xml(xml_file, image_dir, output_dir,username,password,ilabels):
                         login_data = dict(username=username, password=password,
                                         csrfmiddlewaretoken=csrftoken, next='/dashboard')
 
-                        urllogin = urlbase+"/auth/login"
+                        urllogin = urlbase+"api/v1/auth/login"
                         httpclient.post(urllogin, data=login_data,
                                         headers=dict(Referer=urllogin))
 
                         if ("sessionid" in httpclient.cookies):
                             sessionid = httpclient.cookies["sessionid"]
 
-                    url = urlbase+"/api/v1/tasks/"+str(taskid)+"/frames/"+ str(frameid)
+                    url = urlbase+"api/v1/tasks/"+str(taskid)+"/frames/"+ str(frameid)
 
                     req = httpclient.get(url, headers=dict(
                         csrftoken=csrftoken, sessionid=sessionid))
